@@ -1,0 +1,253 @@
+✅ 1. Extended Email Notification Plugin (EXTENDED EMAIL)
+
+The Extended E-mail Plugin (Email-ext plugin) allows Jenkins to send customized email notifications after a build completes.
+
+🔥 Why it is needed
+
+The default Jenkins email is basic.
+Extended Email lets you:
+
+Send emails for SUCCESS, FAILURE, UNSTABLE, or every stage
+
+Customize subject line, body, HTML format
+
+Attach build logs, reports, artifacts
+
+Apply conditions (e.g., email only on failure)
+
+📌 Typical Use Case
+
+You want developers to get notified ONLY if a build fails, with logs attached.
+
+📌 Example configuration (Freestyle Job)
+
+Post-build Actions → Editable Email Notification
+
+Recipients: team@example.com
+
+Subject: “Build ${BUILD_STATUS} for job ${JOB_NAME}”
+
+Content: Custom message body
+
+Triggers: Failure — checked
+
+📌 Pipeline example
+post {
+    failure {
+        emailext(
+            to: "team@example.com",
+            subject: "Build Failed: ${env.JOB_NAME}",
+            body: "Check console output: ${env.BUILD_URL}"
+        )
+    }
+}
+
+✅ 2. Copy Artifact Plugin (COPY ARTIFACT)
+
+This plugin allows one Jenkins job to copy files/artifacts from another Jenkins job.
+
+🔥 Why it is needed
+
+Used in multi-stage pipelines:
+
+BUILD → TEST → DEPLOY
+
+
+The test job needs the artifacts created by the build job.
+The deploy job needs the WAR created by the test job.
+
+📌 Where used in your assignment
+
+MavenJava_Test copies artifacts from MavenJava_Build
+
+MavenWeb_Deploy copies artifacts from MavenWeb_Test
+
+📌 Example configuration
+
+In job → Build Step → Copy artifacts from another project
+
+Project name: MavenWeb_Build
+
+Which build: Latest Successful
+
+Files: **/*
+
+📌 Pipeline example
+steps {
+    copyArtifacts(
+        projectName: 'MavenWeb_Build',
+        selector: lastSuccessful()
+    )
+}
+
+✅ 3. Deploy to Container Plugin (DEPLOY TO)
+
+Used to deploy WAR/EAR files automatically to servers like:
+
+Tomcat
+
+JBoss
+
+GlassFish
+
+WildFly
+
+🔥 Why it is needed
+
+Before this plugin, you would deploy WAR manually by copying it into Tomcat’s webapps folder.
+
+This plugin automates deployment:
+
+Connects to Tomcat Manager
+
+Uploads WAR
+
+Restarts application
+
+📌 Where used in your assignment
+
+In MavenWeb_Deploy, you have a post-build action:
+
+Deploy WAR/EAR to a container
+
+
+Settings:
+
+WAR file: **/*.war
+
+Context path: /webpath
+
+Tomcat URL: http://localhost:8085/
+
+Credentials: admin / 1234
+
+📌 Pipeline example
+deploy adapters: [tomcat9(credentialsId: 'tomcat-creds', 
+    url: 'http://localhost:8085')],
+    war: '**/*.war',
+    contextPath: '/webpath'
+
+✅ 4. Build Pipeline Plugin (BUILD PIPELINE)
+
+This plugin gives a visual pipeline view (flowchart) for multi-job projects.
+
+🔥 Why it is needed
+
+Freestyle jobs do not show a connected graphic pipeline.
+
+With this plugin, you can see:
+
+MavenJava_Build → MavenJava_Test
+
+
+or
+
+MavenWeb_Build → MavenWeb_Test → MavenWeb_Deploy
+
+
+Each job shows:
+
+Status (green/red)
+
+Build number
+
+Trigger arrow
+
+📌 How to use
+
+Dashboard → + New View → Select Build Pipeline View
+
+Configure:
+
+Initial job → MavenWeb_Build
+
+Layout → Based on upstream/downstream
+
+📌 Output example
+[Build] → [Test] → [Deploy]
+
+✅ 5. Pipeline Stage View Plugin (STAGE VIEW)
+
+This plugin provides a graphical layout of the Declarative Pipeline Jenkinsfile.
+
+🔥 Why it is needed
+
+For pipeline jobs using Jenkinsfile:
+
+stage('Clone')
+stage('Build')
+stage('Test')
+stage('Deploy')
+
+
+The Stage View shows each stage as a visual box with:
+
+Stage duration
+
+Status (green/red)
+
+Logs
+
+Parallel steps
+
+📌 Example Stage View
+Clone ✓   Build ✓   Test ✓   Deploy ✓
+
+📌 Installed automatically with Pipeline plugins
+✅ 6. Maven Integration Plugin (MAVEN)
+
+This plugin helps Jenkins run Maven goals like:
+
+clean
+
+install
+
+test
+
+package
+
+🔥 Why it is needed
+
+Maven is commonly used for:
+
+Java projects
+
+WAR packaging
+
+Dependency management
+
+Unit testing
+
+Jenkins integrates with Maven so you can build Java apps easily.
+
+📌 How used in your assignment
+
+Freestyle job → Build Step → Invoke top-level Maven targets
+
+Examples:
+
+👉 Build Job:
+
+Goals: clean
+Goals: install
+
+
+👉 Test Job:
+
+Goals: test
+
+📌 Pipeline example
+stage('Build') {
+    steps {
+        sh 'mvn clean install'
+    }
+}
+
+🎯 Final Summary (Exam-Ready One-Liners)
+Feature	Meaning	Purpose
+Extended Email	Advanced email notifications	Sends custom mails on build success/failure
+Copy Artifact	Copy files between jobs	Used in multi-stage pipelines (Build → Test → Deploy)
+Deploy to Container	Deploy WAR/EAR to Tomcat/JBoss	Automates deployment of web apps
+Build Pipeline View	Visual chain of freestyle jobs	Shows Build → Test → Deploy
+Pipeline Stage View	Graph stages for Jenkinsfile pipelines	Visual view of Clone → Build → Test → Deploy
+Maven Integration	Allows Jenkins to run Maven commands	Build Java/Maven projects using mvn goals
