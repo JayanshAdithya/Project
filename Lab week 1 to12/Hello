@@ -20,3 +20,7 @@ docker stop nagiosdemo
 docker docker rm nagiosdemo
 docker rmi jasonrivers/nagios
 docker rmi jasonrivers/nagios (in new power shell)
+
+
+
+Krishna752006
